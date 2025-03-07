@@ -7,10 +7,9 @@ from stable import forward_substitution, backwards_substitution
 from shift_rows import forward_shift, backward_shift
 from mix_column import forward_mix, backward_mix
 from key_expansion import convert_32_char_hex_text_to_binary_matrix, handle_key_expansion_round
-from utilities import xor_binary_arrays, convert_binary_matrix_to_hex_matrix, convert_image_to_matrix, binary_int_array_to_image, binary_int_matrix_to_binary_string_matrices, binary_string_matrices_to_binary_int_matrix, image_to_byte_array, binary_array_to_image, binary_string_arr_to_binary_string_matrices, binary_string_matrices_to_binary_string_arr, generate_key
+from utilities import xor_binary_arrays, convert_binary_matrix_to_hex_matrix, convert_image_to_matrix, binary_int_array_to_image, binary_int_matrix_to_binary_string_matrices, binary_string_matrices_to_binary_int_matrix, generate_key
 import cloudinary
 import cloudinary.uploader
-from cloudinary.utils import cloudinary_url
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
@@ -142,20 +141,6 @@ def decrypt_16_bytes(curr_text_binary_arr, hex_key):
 
 
 def blarg(hex_key):
-    # result = image_to_byte_array("cat.jpg")
-    # binary_matrix = result[0]
-    # width = result[1][0]
-    # height = result[1][1]
-    # str_matrices = binary_string_arr_to_binary_string_matrices(binary_matrix)
-    # encrypted_str_matrices = list(map(encrypt_16_bytes, str_matrices ))    
-    # flattened_arr = binary_string_matrices_to_binary_string_arr(encrypted_str_matrices)
-    # binary_array_to_image(flattened_arr, width, height, "encrypted_image.png")
-    # decrypted_str_matrices = list(map(decrypt_16_bytes,  encrypted_str_matrices ))
-    # flattened_arr = binary_string_matrices_to_binary_string_arr(decrypted_str_matrices)
-    # binary_array_to_image(flattened_arr, width, height, "decrypted_image.png")
-
-
-
     binary_matrices = convert_image_to_matrix()
     str_matrices = binary_int_matrix_to_binary_string_matrices(binary_matrices)
     encrypted_str_matrices = []

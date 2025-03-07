@@ -1,5 +1,3 @@
-# from Crypto.Cipher import AES
-# from Crypto.Util.Padding import pad
 from PIL import Image
 import numpy as np
 import math
@@ -111,30 +109,6 @@ def binary_to_hex_string( binary_string ):
     hex_string = hex(int_value)[2:]
     
     return hex_string
-
-# # Function to encrypt an image file
-# def convert_image_to_binary_matrices(input_file):
-
-#     # Read the image data
-#     with open(input_file, "rb") as file:
-#         image_data = file.read()  
-#     # Pad the data to be a multiple of 16 bytes
-#     padded_data = pad(image_data, 8)
-
-#     binary_string = utf8_to_binary(padded_data)
-#     binary_matrices = []
-
-#     for i in range(0, int(len(binary_string) / 128), 128):
-#         binary_matrix = []
-#         for j in range(0, 128, 32):
-#             row = []
-#             for k in range(0, 4):
-#                 idx = i * 128 + j * 32 + 8 * k 
-#                 row.append(binary_string[idx : idx + 8])
-#             binary_matrix.append(row)
-#         binary_matrices.append(binary_matrix)
-
-#     return binary_matrices
 
 
 def utf8_to_binary(text):
