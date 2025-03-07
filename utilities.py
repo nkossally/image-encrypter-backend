@@ -276,3 +276,110 @@ def convert_binary_str_matrix_to_str(binary_str_matrix):
 def generate_key():
     hex_string = secrets.token_hex(16)  
     return hex_string
+
+
+def convert_image_to_byte_array():
+
+    # Open the image file
+    with Image.open('cat.jpg') as img:
+        # Create a bytes buffer to hold the image data
+        byte_arr = io.BytesIO()
+        
+        # Save the image into the buffer as a specific format (e.g., PNG, JPEG)
+        img.save(byte_arr, format='PNG')
+        
+        # Get the byte data from the buffer
+        byte_data = byte_arr.getvalue()
+
+    # Convert the byte data into a list of individual bytes
+    byte_list = list(byte_data)
+    return byte_list
+
+# # Display the byte list
+# print(byte_list[:20])  # Print the first 20 bytes for demonstration
+
+#     # image = Image.open(file)
+#     image = Image.open("cat.jpg")
+
+#     byte_arr = io.BytesIO()
+        
+#     # Save the image into the buffer (can specify format like 'JPEG', 'PNG', etc.)
+#     image.save(byte_arr, format=image.format)
+        
+#     # Get the byte array
+#     byte_array = list(byte_arr.getvalue())
+
+#     return byte_array
+
+def convert_byte_arr_to_byte_matrices(byte_arr):
+
+    while len(byte_arr) % SIXTEEN != 0:
+        byte_arr.append(0)
+
+    print(len(byte_arr))
+
+    def to_chunks_of_four(arr):
+        return [arr[i:i + FOUR] for i in range(0, len(arr), FOUR)]
+
+    matrix =  to_chunks_of_four(byte_arr)
+    matrices = to_chunks_of_four(matrix)
+
+    print(len(matrices))
+
+    return matrices
+  
+
+def convert_hex_string_to_bytes(hex_string):
+    byte_data = bytes.fromhex(hex_string)
+
+    print(byte_data)  # Output: b'hello world'
+    return byte_data
+
+def convert_hex_key_to_matrix(hex_str):
+    chunks = [hex_str[i:i+2] for i in range(0, len(hex_str), 2)]
+
+    def connvert_to_byte(hex_str):
+        return int(hex_str, SIXTEEN)
+    
+    chunks = list(map(connvert_to_byte, chunks))
+
+    chunks = [chunks[i: i+ FOUR] for i in range(0, len(chunks), FOUR)]
+
+    return chunks
+
+
+def xor_matrices(matrix1, matrix2):
+    matrix_result = []
+
+    for i in range(len(matrix1)):
+        arr1 = matrix1[i]
+        arr2 = matrix2[i]
+        xor_result = [a ^ b for a, b in zip(arr1, arr2)]
+        matrix_result.append(xor_result)
+    
+    return matrix_result
+
+def convert_hex_matrix_to_int_matrix(matrix):
+    new_matrix = []
+
+    def connvert_to_byte(hex_str):
+        return int(hex_str, SIXTEEN)
+
+    for arr in matrix:
+        new_matrix.append(  list(map(connvert_to_byte, arr)))
+
+    print(new_matrix)
+    return new_matrix
+
+def convert_int_matrix_to_hex_matrix(matrix):
+    new_matrix = []
+
+    def convert_to_hex_str(num):
+        return format(num, '02X')
+
+
+    for arr in matrix:
+        new_matrix.append(  list(map(convert_to_hex_str, arr)))
+
+    print(new_matrix)
+    return new_matrix
