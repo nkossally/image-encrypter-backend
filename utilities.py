@@ -400,5 +400,45 @@ def convert_int_matrix_to_hex_matrix(matrix):
     for arr in matrix:
         new_matrix.append(  list(map(convert_to_hex_str, arr)))
 
-    print(new_matrix)
     return new_matrix
+
+# def convert_hex_matrix_to_binary_string_matrix(matrix):
+#     transformed_matrix = []
+#     def get_binary_string(num):
+#         hex_string = format(num, '02X')
+
+#     for row in matrix:
+#         new_row = []
+#         transformed_matrix.append(list(map(get_binary_string, row)))
+
+#     return transformed_matrix
+
+def convert_binary_string_matrix_to_int_matrix(matrix):
+    transformed_matrix = []
+
+    def get_int(binary_str):
+        return int(binary_str, 2)
+
+    for row in matrix:
+        transformed_matrix.append(list(map(get_int, row)))
+
+    return transformed_matrix
+
+
+
+# def convert_int_matrix_to_hex_matrix(matrix):
+#     new_matrix = []
+
+
+#     def convert_to_hex_str(num):
+#         hex_str = hex(num)[2:]
+#         num1 =  int(hex_str[0], 16)
+#         num2 =  int(hex_str[1], 16)
+#         str1 = bin(num1)[2:].zfill(4)
+#         str2 = bin(num2)[2:].zfill(4)
+#         return str1 + str2
+
+#     for row in matrix:
+#         new_matrix.append(list(map(convert_to_hex_str, row)))
+
+#     return new_matrix

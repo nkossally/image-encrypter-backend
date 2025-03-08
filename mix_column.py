@@ -1,4 +1,5 @@
 import numpy as np
+from utilities import convert_binary_string_matrix_to_int_matrix
 
 FOUR = 4
 SIXTEEN = 16
@@ -185,3 +186,49 @@ def binary_str_to_hex_str(binary_string):
 
     return hex_string.upper() #Return uppercase for standard hex notation
 
+def forward_mix_v2(matrix ):
+    # binary_str_matrix = convert_int_matrix_to_hex_matrix(matrix)
+    transformed_matrix = [[] for _ in range(FOUR)]
+    
+    for i in range(FOUR):
+        row = list(map(num_to_binary_string, FORWARD_MATRIX[i]))
+
+        for j in range(FOUR):
+            col = list(map(num_to_binary_string, matrix[j]))
+            sum =  [0] * (EIGHT)
+            for k in range(FOUR):
+
+                product = multiply_binary_strings(col[k], row[k])
+                sum = add_8_bit_binary_arrays(sum, product)
+
+            sum_str = list(map(str, sum))
+        
+            transformed_matrix[j].append("".join(sum_str))
+    
+    transformed_matrix = convert_binary_string_matrix_to_int_matrix(transformed_matrix)
+
+    return transformed_matrix
+
+def backward_mix_v2(matrix):
+    transformed_matrix = []
+    
+    for i in range(FOUR):
+        transformed_matrix.append([])
+
+    for i in range(FOUR):
+        row = list(map(num_to_binary_string, BACKWARD_MATRIX[i]))
+
+        for j in range(FOUR):
+            col = matrix[j]
+
+            sum =  [0] * (EIGHT)
+            for k in range(FOUR):
+
+                product = multiply_binary_strings(col[k], row[k])
+                sum = add_8_bit_binary_arrays(sum, product)
+
+            sum_str = list(map(str, sum))
+
+            transformed_matrix[j].append("".join(sum_str))
+
+    return transformed_matrix
