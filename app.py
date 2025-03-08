@@ -6,8 +6,8 @@ import os
 from stable import forward_substitution, forward_substitution_v2,  backwards_substitution, S_BOX, INVERSE_MATRIX, S_BOX_INT
 from shift_rows import forward_shift, backward_shift
 from mix_column import forward_mix, backward_mix
-from key_expansion import convert_32_char_hex_text_to_binary_matrix, handle_key_expansion_round
-from utilities import xor_binary_arrays, convert_binary_matrix_to_hex_matrix, convert_image_to_matrix, binary_int_array_to_image, binary_int_matrix_to_binary_string_matrices, binary_string_matrices_to_binary_int_matrix, generate_key, convert_image_to_byte_array, convert_hex_string_to_bytes, convert_byte_arr_to_byte_matrices, convert_hex_key_to_matrix, convert_hex_matrix_to_int_matrix, convert_int_matrix_to_hex_matrix
+from key_expansion import convert_32_char_hex_text_to_binary_matrix, handle_key_expansion_round, handle_key_expansion_round_v2
+from utilities import xor_binary_arrays, convert_binary_matrix_to_hex_matrix, convert_image_to_matrix, binary_int_array_to_image, binary_int_matrix_to_binary_string_matrices, binary_string_matrices_to_binary_int_matrix, generate_key, convert_image_to_byte_array, convert_hex_string_to_bytes, convert_byte_arr_to_byte_matrices, convert_hex_key_to_matrix, convert_hex_matrix_to_int_matrix, convert_int_matrix_to_hex_matrix, convert_hex_key_to_matrix
 import cloudinary
 import cloudinary.uploader
 from flask_cors import CORS, cross_origin
@@ -32,7 +32,7 @@ cloudinary.config(
 
 
 key = "00001010101000011000101100000011001111000000111110110011001011011111101110011111100010110101010100110001100011011010100101110100"
-# hex_key = "0f1571c947d9e8590cb7add6af7f6798"
+hex_key = "0f1571c947d9e8590cb7add6af7f6798"
 text = "0123456789abcdeffedcba9876543210"
 
 decryption_key = [['b4', '8e', 'f3', '52'], ['ba', '98', '13', '4e'], [
@@ -169,9 +169,24 @@ def blarg(hex_key):
     # conversion = int("g", 16)
     # print(conversion)
 
-    int_matrix = convert_hex_matrix_to_int_matrix(matrix)
-    poo = forward_substitution_v2(int_matrix)
-    poo = convert_int_matrix_to_hex_matrix(poo)
-    print(poo)
+    def connvert_to_byte(hex_str):
+        return int(hex_str, 16)
+
+    # int_matrix = convert_hex_matrix_to_int_matrix(matrix)
+    # poo = forward_substitution_v2(int_matrix)
+    # poo = convert_int_matrix_to_hex_matrix(poo)
+    hex_key = "0f1571c947d9e8590cb7add6af7f6798"
+
+    hex_matrix = convert_hex_key_to_matrix(hex_key)
+    print("hex_matrix", hex_matrix)
+    keys = [hex_matrix]
+    curr = hex_matrix
+    for i in range(10):
+        curr = handle_key_expansion_round_v2(curr, i)
+        keys.append(curr)
+
+    keys = list(map(convert_int_matrix_to_hex_matrix, keys))
+    print(keys)
+
 
 blarg("")

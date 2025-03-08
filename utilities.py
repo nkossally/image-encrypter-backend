@@ -34,6 +34,21 @@ def xor_binary_arrays(arr_1, arr_2):
     
     return transformed_matrix
 
+def xor_int_arrays(arr_1, arr_2):
+    print(arr_1, arr_2)
+    transformed_matrix = []
+    for i in range(len(arr_1)):
+
+        new_row = []
+        for j in range(len(arr_1[0])):
+     
+            sum = arr_1[i][j] ^ arr_2[i][j] 
+            new_row.append(sum)
+        
+        transformed_matrix.append(new_row)
+    
+    return transformed_matrix
+
 def xor(binary_str_1, binary_str_2):
     sum = ""
     for i in range(len(binary_str_1)):
@@ -336,12 +351,16 @@ def convert_hex_string_to_bytes(hex_string):
     return byte_data
 
 def convert_hex_key_to_matrix(hex_str):
+    print("hex_str")
     chunks = [hex_str[i:i+2] for i in range(0, len(hex_str), 2)]
+    print("chunks", chunks)
 
     def connvert_to_byte(hex_str):
         return int(hex_str, SIXTEEN)
     
     chunks = list(map(connvert_to_byte, chunks))
+
+    print("chunks", chunks)
 
     chunks = [chunks[i: i+ FOUR] for i in range(0, len(chunks), FOUR)]
 
