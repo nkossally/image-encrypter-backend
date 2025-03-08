@@ -1,4 +1,4 @@
-from utilities import xor, xor_binary_arrays, xor_int_arrays, hex_to_eight_bit_binary_string, hex_to_four_bit_binary_string, convert_binary_matrix_to_hex_matrix, convert_binary_arr_to_hex_arr
+from utilities import xor, xor_binary_arrays, xor_int_matrices, hex_to_eight_bit_binary_string, hex_to_four_bit_binary_string, convert_binary_matrix_to_hex_matrix, convert_binary_arr_to_hex_arr
 from stable import transformation_v2, S_BOX, S_BOX_INT, forward_substitution_v2
 
 SIXTEEN = 16

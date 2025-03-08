@@ -34,8 +34,7 @@ def xor_binary_arrays(arr_1, arr_2):
     
     return transformed_matrix
 
-def xor_int_arrays(arr_1, arr_2):
-    print(arr_1, arr_2)
+def xor_int_matrices(arr_1, arr_2):
     transformed_matrix = []
     for i in range(len(arr_1)):
 
@@ -159,7 +158,6 @@ def binary_int_array_to_image(binary_matrix, file_save_path):
 
     # Convert binary matrix to an 8-bit image (0=black, 255=white)
     image_data = numpy_binary_matrix * 255  # Multiply by 255 to make it a grayscale image
-    print("image_data", image_data)
 
     # Convert the image data to a PIL Image
     image = Image.fromarray(image_data.astype(np.uint8))
@@ -331,36 +329,35 @@ def convert_byte_arr_to_byte_matrices(byte_arr):
     while len(byte_arr) % SIXTEEN != 0:
         byte_arr.append(0)
 
-    print(len(byte_arr))
-
     def to_chunks_of_four(arr):
         return [arr[i:i + FOUR] for i in range(0, len(arr), FOUR)]
 
     matrix =  to_chunks_of_four(byte_arr)
     matrices = to_chunks_of_four(matrix)
 
-    print(len(matrices))
-
     return matrices
+
+def convert_byte_matrices_to_byte_arr(matrices):
+    byte_arr = []
+    for matrix in matrices:
+        for row in matrix:
+            byte_arr += row
+
+    return byte_arr
   
 
 def convert_hex_string_to_bytes(hex_string):
     byte_data = bytes.fromhex(hex_string)
 
-    print(byte_data)  # Output: b'hello world'
     return byte_data
 
 def convert_hex_key_to_matrix(hex_str):
-    print("hex_str")
     chunks = [hex_str[i:i+2] for i in range(0, len(hex_str), 2)]
-    print("chunks", chunks)
 
     def connvert_to_byte(hex_str):
         return int(hex_str, SIXTEEN)
     
     chunks = list(map(connvert_to_byte, chunks))
-
-    print("chunks", chunks)
 
     chunks = [chunks[i: i+ FOUR] for i in range(0, len(chunks), FOUR)]
 
@@ -387,7 +384,6 @@ def convert_hex_matrix_to_int_matrix(matrix):
     for arr in matrix:
         new_matrix.append(  list(map(connvert_to_byte, arr)))
 
-    print(new_matrix)
     return new_matrix
 
 def convert_int_matrix_to_hex_matrix(matrix):
