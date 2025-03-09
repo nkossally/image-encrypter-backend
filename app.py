@@ -3,11 +3,11 @@ from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 import os
 
-from stable import forward_substitution, forward_substitution_v2,  backwards_substitution, S_BOX, INVERSE_MATRIX, S_BOX_INT
+from stable import forward_substitution, forward_substitution_v2,  backwards_substitution, backwards_substitution_v2, S_BOX, INVERSE_MATRIX, S_BOX_INT
 from shift_rows import forward_shift, backward_shift
-from mix_column import forward_mix, backward_mix, forward_mix_v2
+from mix_column import forward_mix, backward_mix, forward_mix_v2, backward_mix_v2
 from key_expansion import convert_32_char_hex_text_to_binary_matrix, handle_key_expansion_round, handle_key_expansion_round_v2
-from utilities import xor_binary_arrays, xor_int_matrices, convert_binary_matrix_to_hex_matrix, convert_image_to_matrix, binary_int_array_to_image, binary_int_matrix_to_binary_string_matrices, binary_string_matrices_to_binary_int_matrix, generate_key, convert_image_to_byte_array, convert_hex_string_to_bytes, convert_byte_arr_to_byte_matrices, convert_hex_key_to_matrix, convert_hex_matrix_to_int_matrix, convert_int_matrix_to_hex_matrix, convert_hex_key_to_matrix, convert_int_matrix_to_hex_matrix, convert_byte_matrices_to_byte_arr
+from utilities import xor_binary_arrays, xor_int_matrices, convert_binary_matrix_to_hex_matrix, convert_image_to_matrix, binary_int_array_to_image, binary_int_matrix_to_binary_string_matrices, binary_string_matrices_to_binary_int_matrix, generate_key, convert_image_to_byte_array, convert_hex_string_to_bytes, convert_byte_arr_to_byte_matrices, convert_hex_key_to_matrix, convert_hex_matrix_to_int_matrix, convert_int_matrix_to_hex_matrix, convert_hex_key_to_matrix, convert_int_matrix_to_hex_matrix, convert_byte_matrices_to_byte_arr, test_file, convert_byte_matrices_to_image
 import cloudinary
 import cloudinary.uploader
 from flask_cors import CORS, cross_origin
@@ -89,20 +89,21 @@ def encrypt_v2():
         return jsonify({"error": "No selected file"}), 400
     
     if file and allowed_file(file.filename):
-        byte_arr = convert_image_to_byte_array()
-        matrices = convert_byte_arr_to_byte_matrices(byte_arr)
+        dict = test_file(file)
+        matrices = dict["matrices"]
+        width = dict["width"]
         hex_key = generate_key()
         encrypted_matrices = []
         length = len(matrices)
+        print(length)
         print(matrices[0])
         print(matrices[-1])
         for index, matrix in enumerate(matrices):
             # print("handling", index, "of", length )
             encrypted_matrices.append(encrypt_16_bytes_v2(matrix, hex_key))
-        binary_int_arr = convert_byte_matrices_to_byte_arr(encrypted_matrices)
-        result = binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
+        result = convert_byte_matrices_to_image(encrypted_matrices, width)
 
-        return jsonify({"message": "File uploaded successfully", "url": result, "hex_key": hex_key }), 200
+        return jsonify({"message": "File uploaded successfully", "url": result, "hex_key": hex_key, "width": width}), 200
     else:
         return jsonify({"error": "Unsupported file type"}), 415
 
@@ -136,6 +137,38 @@ def decrypt():
         return jsonify({"message": "File uploaded successfully", "url": result }), 200
     else:
         return jsonify({"error": "Unsupported file type"}), 415
+
+@app.route('/decrypt_v2', methods = ['POST'])
+@cross_origin()
+def decrypt_v2():
+    if 'image' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['image']
+
+    hex_key = request.form.get('key')
+
+    print("key", key)
+    
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+    
+    if file and allowed_file(file.filename):
+        dict = test_file(file)
+        matrices = dict["matrices"]
+        width = dict["width"] 
+        print("width", width)       
+        decrypted_matrices = []
+        for matrix in matrices:
+            decrypted_matrices.append(decrypt_16_bytes_v2(matrix, hex_key))       
+        result = convert_byte_matrices_to_image(decrypted_matrices, width)
+
+        print("result", result)
+
+        return jsonify({"message": "File uploaded successfully", "url": result }), 200
+    else:
+        return jsonify({"error": "Unsupported file type"}), 415
+
 
 def encrypt_16_bytes(curr_text_binary_arr, hex_key):
     key_binary_arr = convert_32_char_hex_text_to_binary_matrix(hex_key)
@@ -197,6 +230,33 @@ def decrypt_16_bytes(curr_text_binary_arr, hex_key):
 
     return curr_text_binary_arr
 
+def decrypt_16_bytes_v2(curr_int_matrix, hex_key):
+
+    hex_key_matrix = convert_hex_key_to_matrix(hex_key)
+    curr_int_matrix = xor_int_matrices(
+        curr_int_matrix, hex_key_matrix)
+
+
+    round_keys = []
+
+    # round_keys.insert(0, key_binary_arr)
+
+    for i in range(10):
+        round_keys.insert(0, hex_key_matrix)
+        hex_key_matrix = handle_key_expansion_round_v2(hex_key_matrix, i)
+        # key_hex_arr = convert_binary_matrix_to_hex_matrix(round_key
+
+    for i in range(10):
+        curr_int_matrix = backward_shift(curr_int_matrix)
+        curr_int_matrix = backwards_substitution_v2(curr_int_matrix)
+        curr_int_matrix = xor_int_matrices(
+            curr_int_matrix, round_keys[i])
+
+        if i != 9:
+            curr_int_matrix = backward_mix_v2(curr_int_matrix)
+
+    return curr_int_matrix
+
 
 def blarg(hex_key):
     # binary_matrices = convert_image_to_matrix()
@@ -246,7 +306,25 @@ def blarg(hex_key):
     return meow
 
 
+@app.route('/test', methods = ['POST'])
+@cross_origin()
+def test():
+    if 'image' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['image']
+
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+    
+    if file and allowed_file(file.filename):
+        result = test_file(file)
+        return {}
+
+
 # blarg("")
+
+
 
 if __name__ == "__main__":
     app.run(port=8000, debug=True)
