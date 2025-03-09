@@ -116,52 +116,6 @@ def multiply_polynomials(poly1, poly2):
 
     return result
 
-def backward_mix(matrix):
-    transformed_matrix = []
-    
-    for i in range(FOUR):
-        transformed_matrix.append([])
-
-    for i in range(FOUR):
-        row = list(map(num_to_binary_string, BACKWARD_MATRIX[i]))
-
-        for j in range(FOUR):
-            col = matrix[j]
-
-            sum =  [0] * (EIGHT)
-            for k in range(FOUR):
-
-                product = multiply_binary_strings(col[k], row[k])
-                sum = add_8_bit_binary_arrays(sum, product)
-
-            sum_str = list(map(str, sum))
-
-            transformed_matrix[j].append("".join(sum_str))
-
-    return transformed_matrix
-
-def forward_mix(matrix ):
-    transformed_matrix = []
-    
-    for i in range(FOUR):
-        transformed_matrix.append([])
-
-    for i in range(FOUR):
-        row = list(map(num_to_binary_string, FORWARD_MATRIX[i]))
-
-        for j in range(FOUR):
-            col = matrix[j]
-            sum =  [0] * (EIGHT)
-            for k in range(FOUR):
-
-                product = multiply_binary_strings(col[k], row[k])
-                sum = add_8_bit_binary_arrays(sum, product)
-
-            sum_str = list(map(str, sum))
-        
-            transformed_matrix[j].append("".join(sum_str))
-
-    return transformed_matrix
 
 
 def binary_arr_to_hex_arr(arr):
