@@ -147,8 +147,6 @@ def convert_image_to_matrix(file):
     # You can adjust the threshold value (here, it's 128) to get the desired result
     threshold = 128
     binary_matrix = (gray_array > threshold).astype(int)
-    print(len(binary_matrix), len(binary_matrix[0]))
-    print("first row", binary_matrix[0])
 
     return binary_matrix
 
@@ -415,8 +413,6 @@ def convert_binary_str_matrix_to_str(binary_str_matrix):
 
 def convert_hex_int_matrix_to_str(matrix):
     result = ""
-    print("convert_hex_int_matrix_to_str")
-    print(matrix[0])
     for row in matrix:
         for elem in row:
             # print(elem)
@@ -576,3 +572,24 @@ def convert_binary_string_matrix_to_int_matrix(matrix):
 #         new_matrix.append(list(map(convert_to_hex_str, row)))
 
 #     return new_matrix
+
+def convert_binary_str_matrix_to_int_matrix(binary_str_matrix):
+    matrix = []
+    for row in binary_str_matrix:
+        new_row = []
+        for elem in row:
+            if elem != "":
+                new_row.append(int(elem, 2))
+            else:
+                new_row.append(0)
+        matrix.append(new_row)
+    return matrix
+
+def convert_int_matrix_to_binary_str_matrix(matrix):
+    binary_str_matrix = []
+    for row in matrix:
+        new_row = []
+        for elem in row:
+            new_row.append(format(elem, '08b'))
+        binary_str_matrix.append(new_row)
+    return binary_str_matrix

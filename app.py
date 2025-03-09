@@ -7,7 +7,7 @@ from stable import forward_substitution, forward_substitution_v2,  backwards_sub
 from shift_rows import forward_shift, backward_shift
 from mix_column import forward_mix, backward_mix, forward_mix_v2, backward_mix_v2
 from key_expansion import convert_32_char_hex_text_to_binary_matrix, handle_key_expansion_round, handle_key_expansion_round_v2
-from utilities import xor_binary_arrays, xor_int_matrices, convert_binary_matrix_to_hex_matrix, convert_image_to_matrix, binary_int_array_to_image, binary_int_matrix_to_binary_string_matrices, binary_string_matrices_to_binary_int_matrix, generate_key, convert_image_to_byte_array, convert_hex_string_to_bytes, convert_byte_arr_to_byte_matrices, convert_hex_key_to_matrix, convert_hex_matrix_to_int_matrix, convert_int_matrix_to_hex_matrix, convert_hex_key_to_matrix, convert_int_matrix_to_hex_matrix, convert_byte_matrices_to_byte_arr, test_file, convert_byte_matrices_to_image
+from utilities import xor_binary_arrays, xor_int_matrices, convert_binary_matrix_to_hex_matrix, convert_image_to_matrix, binary_int_array_to_image, binary_int_matrix_to_binary_string_matrices, binary_string_matrices_to_binary_int_matrix, generate_key, convert_image_to_byte_array, convert_hex_string_to_bytes, convert_byte_arr_to_byte_matrices, convert_hex_key_to_matrix, convert_hex_matrix_to_int_matrix, convert_int_matrix_to_hex_matrix, convert_hex_key_to_matrix, convert_int_matrix_to_hex_matrix, convert_byte_matrices_to_byte_arr, test_file, convert_byte_matrices_to_image, convert_binary_str_matrix_to_int_matrix, convert_int_matrix_to_binary_str_matrix
 import cloudinary
 import cloudinary.uploader
 from flask_cors import CORS, cross_origin
@@ -89,21 +89,19 @@ def encrypt_v2():
         return jsonify({"error": "No selected file"}), 400
     
     if file and allowed_file(file.filename):
-        dict = test_file(file)
-        matrices = dict["matrices"]
-        width = dict["width"]
+        binary_matrices = convert_image_to_matrix(file)
+        str_matrices = binary_int_matrix_to_binary_string_matrices(binary_matrices)
+        int_matrices = list(map(convert_binary_str_matrix_to_int_matrix, str_matrices))
         hex_key = generate_key()
-        encrypted_matrices = []
-        length = len(matrices)
-        print(length)
-        print(matrices[0])
-        print(matrices[-1])
-        for index, matrix in enumerate(matrices):
-            # print("handling", index, "of", length )
-            encrypted_matrices.append(encrypt_16_bytes_v2(matrix, hex_key))
-        result = convert_byte_matrices_to_image(encrypted_matrices, width)
+        encrypted_int_matrices = []
+        for matrix in int_matrices:
+            encrypted_int_matrices.append(encrypt_16_bytes_v2(matrix, hex_key))
+        
+        encrypted_str_matrices = list(map(convert_int_matrix_to_binary_str_matrix,encrypted_int_matrices ))
+        binary_int_arr = binary_string_matrices_to_binary_int_matrix(encrypted_str_matrices)
+        result = binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
 
-        return jsonify({"message": "File uploaded successfully", "url": result, "hex_key": hex_key, "width": width}), 200
+        return jsonify({"message": "File uploaded successfully", "url": result["url"], "hex_key": hex_key }), 200
     else:
         return jsonify({"error": "Unsupported file type"}), 415
 
@@ -154,15 +152,17 @@ def decrypt_v2():
         return jsonify({"error": "No selected file"}), 400
     
     if file and allowed_file(file.filename):
-        dict = test_file(file)
-        matrices = dict["matrices"]
-        width = dict["width"] 
-        print("width", width)       
-        decrypted_matrices = []
-        for matrix in matrices:
-            decrypted_matrices.append(decrypt_16_bytes_v2(matrix, hex_key))       
-        result = convert_byte_matrices_to_image(decrypted_matrices, width)
-
+        binary_matrices = convert_image_to_matrix(file)
+        str_matrices = binary_int_matrix_to_binary_string_matrices(binary_matrices)
+        int_matrices = list(map(convert_binary_str_matrix_to_int_matrix, str_matrices))
+        decrypted_int_matrices = []
+        for matrix in int_matrices:
+            decrypted_int_matrices.append(decrypt_16_bytes_v2(matrix, hex_key))       
+    
+        derypted_str_matrices = list(map(convert_int_matrix_to_binary_str_matrix,decrypted_int_matrices ))
+        binary_int_arr = binary_string_matrices_to_binary_int_matrix(derypted_str_matrices)
+        result = binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
+       
         print("result", result)
 
         return jsonify({"message": "File uploaded successfully", "url": result }), 200
