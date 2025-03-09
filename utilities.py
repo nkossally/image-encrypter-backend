@@ -37,6 +37,8 @@ def xor_binary_arrays(arr_1, arr_2):
 def xor_int_matrices(arr_1, arr_2):
     transformed_matrix = []
     for i in range(len(arr_1)):
+        if "" in arr_1[i] or "" in arr_2[i]:
+            return [["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""]]
 
         new_row = []
         for j in range(len(arr_1[0])):
@@ -215,8 +217,6 @@ def convert_byte_matrices_to_image(matrices, width):
     print("convert_byte_matrices_to_image")
 
     matrix = convert_matrices_to_matrix_of_width(matrices, width)
-    print("matrix", len(matrix))
-    print(matrix[0])
 
     numpy_binary_matrix = np.array(matrix)  # Ensure it's a NumPy array
 
@@ -581,11 +581,13 @@ def convert_binary_str_matrix_to_int_matrix(binary_str_matrix):
             if elem != "":
                 new_row.append(int(elem, 2))
             else:
-                new_row.append(0)
+                new_row.append("")
         matrix.append(new_row)
     return matrix
 
 def convert_int_matrix_to_binary_str_matrix(matrix):
+    if matrix_contains_empty_string(matrix):
+        return [[],[],[],[]]
     binary_str_matrix = []
     for row in matrix:
         new_row = []
@@ -593,3 +595,9 @@ def convert_int_matrix_to_binary_str_matrix(matrix):
             new_row.append(format(elem, '08b'))
         binary_str_matrix.append(new_row)
     return binary_str_matrix
+
+def matrix_contains_empty_string(matrix):
+    for row in matrix:
+        if "" in row:
+            return True
+    return False

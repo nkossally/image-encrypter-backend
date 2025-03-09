@@ -7,7 +7,7 @@ from stable import forward_substitution, forward_substitution_v2,  backwards_sub
 from shift_rows import forward_shift, backward_shift
 from mix_column import forward_mix, backward_mix, forward_mix_v2, backward_mix_v2
 from key_expansion import convert_32_char_hex_text_to_binary_matrix, handle_key_expansion_round, handle_key_expansion_round_v2
-from utilities import xor_binary_arrays, xor_int_matrices, convert_binary_matrix_to_hex_matrix, convert_image_to_matrix, binary_int_array_to_image, binary_int_matrix_to_binary_string_matrices, binary_string_matrices_to_binary_int_matrix, generate_key, convert_image_to_byte_array, convert_hex_string_to_bytes, convert_byte_arr_to_byte_matrices, convert_hex_key_to_matrix, convert_hex_matrix_to_int_matrix, convert_int_matrix_to_hex_matrix, convert_hex_key_to_matrix, convert_int_matrix_to_hex_matrix, convert_byte_matrices_to_byte_arr, test_file, convert_byte_matrices_to_image, convert_binary_str_matrix_to_int_matrix, convert_int_matrix_to_binary_str_matrix
+from utilities import xor_binary_arrays, xor_int_matrices, convert_binary_matrix_to_hex_matrix, convert_image_to_matrix, binary_int_array_to_image, binary_int_matrix_to_binary_string_matrices, binary_string_matrices_to_binary_int_matrix, generate_key, convert_image_to_byte_array, convert_hex_string_to_bytes, convert_byte_arr_to_byte_matrices, convert_hex_key_to_matrix, convert_hex_matrix_to_int_matrix, convert_int_matrix_to_hex_matrix, convert_hex_key_to_matrix, convert_int_matrix_to_hex_matrix, convert_byte_matrices_to_byte_arr, test_file, convert_byte_matrices_to_image, convert_binary_str_matrix_to_int_matrix, convert_int_matrix_to_binary_str_matrix, matrix_contains_empty_string, convert_hex_matrix_to_binary_matrix
 import cloudinary
 import cloudinary.uploader
 from flask_cors import CORS, cross_origin
@@ -50,6 +50,13 @@ matrix_2 = [
     ["F2", "4C", "E7", "8C"],
     ["4D", "90", "4A", "D8"],
     ["97", "EC", "C3", "95"]
+]
+
+matrix_4 = [
+["01", "23", "45", "67"],
+["89", "ab", "cd", "ef"],
+["fe", "dc", "ba", "98"],
+["76", "54", "32", "10"]
 ]
 
 @app.route('/encrypt', methods = ['POST'])
@@ -95,7 +102,10 @@ def encrypt_v2():
         hex_key = generate_key()
         encrypted_int_matrices = []
         for matrix in int_matrices:
-            encrypted_int_matrices.append(encrypt_16_bytes_v2(matrix, hex_key))
+            if matrix_contains_empty_string(matrix):
+                encrypted_int_matrices.append(matrix)
+            else:
+                encrypted_int_matrices.append(encrypt_16_bytes_v2(matrix, hex_key))
         
         encrypted_str_matrices = list(map(convert_int_matrix_to_binary_str_matrix,encrypted_int_matrices ))
         binary_int_arr = binary_string_matrices_to_binary_int_matrix(encrypted_str_matrices)
@@ -126,7 +136,7 @@ def decrypt():
         str_matrices = binary_int_matrix_to_binary_string_matrices(binary_matrices)
         decrypted_str_matrices = []
         for matrix in str_matrices:
-            decrypted_str_matrices.append(decrypt_16_bytes(matrix, hex_key))       
+            decrypted_str_matrices.append(decrypt_16_bytes(matrix, hex_key))
         binary_int_arr = binary_string_matrices_to_binary_int_matrix(decrypted_str_matrices)
         result = binary_int_array_to_image(binary_int_arr, "decrypted_image.png")
 
@@ -157,7 +167,10 @@ def decrypt_v2():
         int_matrices = list(map(convert_binary_str_matrix_to_int_matrix, str_matrices))
         decrypted_int_matrices = []
         for matrix in int_matrices:
-            decrypted_int_matrices.append(decrypt_16_bytes_v2(matrix, hex_key))       
+            if matrix_contains_empty_string(matrix):
+                decrypted_int_matrices.append(matrix)
+            else:
+                decrypted_int_matrices.append(decrypt_16_bytes_v2(matrix, hex_key))
     
         derypted_str_matrices = list(map(convert_int_matrix_to_binary_str_matrix,decrypted_int_matrices ))
         binary_int_arr = binary_string_matrices_to_binary_int_matrix(derypted_str_matrices)
@@ -233,8 +246,7 @@ def decrypt_16_bytes(curr_text_binary_arr, hex_key):
 def decrypt_16_bytes_v2(curr_int_matrix, hex_key):
 
     hex_key_matrix = convert_hex_key_to_matrix(hex_key)
-    curr_int_matrix = xor_int_matrices(
-        curr_int_matrix, hex_key_matrix)
+
 
 
     round_keys = []
@@ -245,6 +257,9 @@ def decrypt_16_bytes_v2(curr_int_matrix, hex_key):
         round_keys.insert(0, hex_key_matrix)
         hex_key_matrix = handle_key_expansion_round_v2(hex_key_matrix, i)
         # key_hex_arr = convert_binary_matrix_to_hex_matrix(round_key
+
+    curr_int_matrix = xor_int_matrices(
+        curr_int_matrix, hex_key_matrix)
 
     for i in range(10):
         curr_int_matrix = backward_shift(curr_int_matrix)
@@ -258,68 +273,31 @@ def decrypt_16_bytes_v2(curr_int_matrix, hex_key):
     return curr_int_matrix
 
 
-def blarg(hex_key):
-    # binary_matrices = convert_image_to_matrix()
-    # str_matrices = binary_int_matrix_to_binary_string_matrices(binary_matrices)
-    # encrypted_str_matrices = []
-    # for matrix in str_matrices:
-    #     encrypted_str_matrices.append(encrypt_16_bytes(matrix, hex_key))
-    # binary_int_arr = binary_string_matrices_to_binary_int_matrix(encrypted_str_matrices)
-    # binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
-    # decrypted_str_matrices = []
-    # for matrix in str_matrices:
-    #     decrypted_str_matrices.append(decrypt_16_bytes(matrix, hex_key))
-    
-    # binary_int_arr = binary_string_matrices_to_binary_int_matrix(decrypted_str_matrices)
-    # binary_int_array_to_image(binary_int_arr, "decrypted_image.png")
-
-
-    # byte_arr = convert_image_to_byte_array()
-    # matrices = convert_byte_arr_to_byte_matrices(byte_arr)
-
-    # conversion = int("g", 16)
-    # print(conversion)
-
-    def connvert_to_byte(hex_str):
-        return int(hex_str, 16)
-
-    # int_matrix = convert_hex_matrix_to_int_matrix(matrix)
-    # poo = forward_substitution_v2(int_matrix)
-    # poo = convert_int_matrix_to_hex_matrix(poo)
-    # hex_key = "0f1571c947d9e8590cb7add6af7f6798"
-
-    # hex_matrix = convert_hex_key_to_matrix(hex_key)
-    # print("hex_matrix", hex_matrix)
-    # keys = [hex_matrix]
-    # curr = hex_matrix
-    # for i in range(10):
-    #     curr = handle_key_expansion_round_v2(curr, i)
-    #     keys.append(curr)
-
-    # keys = list(map(convert_int_matrix_to_hex_matrix, keys))
-    # print(keys)
-    int_matrix = convert_hex_matrix_to_int_matrix(matrix_2)
-    print(int_matrix)
-    meow = forward_mix_v2(int_matrix)
-    meow = convert_int_matrix_to_hex_matrix(meow)
-    print(meow)
-    return meow
-
-
 @app.route('/test', methods = ['POST'])
 @cross_origin()
 def test():
-    if 'image' not in request.files:
-        return jsonify({"error": "No file part"}), 400
 
-    file = request.files['image']
+    matrixie = convert_hex_matrix_to_int_matrix(matrix_4)
+    print(matrixie)
+    int_result = encrypt_16_bytes_v2(matrixie, hex_key)
+    result = convert_int_matrix_to_hex_matrix(int_result)
 
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+    print(result)
+    int_result = decrypt_16_bytes_v2(int_result, hex_key)
+    result = convert_int_matrix_to_hex_matrix(int_result)
+    print(result)
+
+    matrixie = convert_hex_matrix_to_binary_matrix(matrix_4)
+    print(matrixie)
+    str_result = encrypt_16_bytes(matrixie, hex_key)
+    result = convert_binary_matrix_to_hex_matrix(str_result)
+
+    print(result)
+    str_result = decrypt_16_bytes(str_result, hex_key)
+    result = convert_binary_matrix_to_hex_matrix(str_result)
+    print(result)
     
-    if file and allowed_file(file.filename):
-        result = test_file(file)
-        return {}
+    return {}
 
 
 # blarg("")
