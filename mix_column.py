@@ -117,11 +117,6 @@ def multiply_polynomials(poly1, poly2):
     return result
 
 
-
-def binary_arr_to_hex_arr(arr):
-    str_arr = map(str, arr)
-    return binary_str_to_hex_str("".join(str_arr))
-
 def binary_str_to_hex_str(binary_string):
     """Converts a binary string to a hexadecimal string.
 
