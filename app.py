@@ -85,7 +85,7 @@ def encrypt_v2():
         binary_int_arr = binary_string_matrices_to_binary_int_matrix(encrypted_str_matrices)
         result = binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
 
-        return jsonify({"message": "File uploaded successfully", "url": result["url"], "hex_key": hex_key }), 200
+        return jsonify({"message": "File uploaded successfully", "url": result["url"], "key": hex_key }), 200
     else:
         return jsonify({"error": "Unsupported file type"}), 415
 
@@ -119,7 +119,7 @@ def decrypt_v2():
         result = binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
        
 
-        return jsonify({"message": "File uploaded successfully", "url": result }), 200
+        return jsonify({"message": "File uploaded successfully", "url": result["url"] }), 200
     else:
         return jsonify({"error": "Unsupported file type"}), 415
 
