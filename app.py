@@ -58,7 +58,7 @@ matrix_4 = [
 ]
 
 
-@app.route('/encrypt_v2', methods = ['POST'])
+@app.route('/encrypt', methods = ['POST'])
 @cross_origin()
 def encrypt_v2():
     if 'image' not in request.files:
@@ -90,7 +90,7 @@ def encrypt_v2():
         return jsonify({"error": "Unsupported file type"}), 415
 
 
-@app.route('/decrypt_v2', methods = ['POST'])
+@app.route('/decrypt', methods = ['POST'])
 @cross_origin()
 def decrypt_v2():
     if 'image' not in request.files:
