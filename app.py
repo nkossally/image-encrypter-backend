@@ -73,13 +73,20 @@ def encrypt_v2():
         binary_matrices = convert_image_to_matrix(file)
         str_matrices = binary_int_matrix_to_binary_string_matrices(binary_matrices)
         int_matrices = list(map(convert_binary_str_matrix_to_int_matrix, str_matrices))
+        
         hex_key = generate_key()
+        hex_key_matrix = convert_hex_key_to_matrix(hex_key)
+        keys = [hex_key_matrix]
+        for i in range(10):
+            hex_key_matrix = handle_key_expansion_round_v2(hex_key_matrix, i)
+            keys.append(hex_key_matrix)
+
         encrypted_int_matrices = []
         for matrix in int_matrices:
             if matrix_contains_empty_string(matrix):
                 encrypted_int_matrices.append(matrix)
             else:
-                encrypted_int_matrices.append(encrypt_16_bytes_v2(matrix, hex_key))
+                encrypted_int_matrices.append(encrypt_16_bytes_v2(matrix, keys))
         
         encrypted_str_matrices = list(map(convert_int_matrix_to_binary_str_matrix,encrypted_int_matrices ))
         binary_int_arr = binary_string_matrices_to_binary_int_matrix(encrypted_str_matrices)
@@ -99,6 +106,11 @@ def decrypt_v2():
     file = request.files['image']
 
     hex_key = request.form.get('key')
+    hex_key_matrix = convert_hex_key_to_matrix(hex_key)
+    keys = [hex_key_matrix]
+    for i in range(10):
+        hex_key_matrix = handle_key_expansion_round_v2(hex_key_matrix, i)
+        keys.insert(0, hex_key_matrix)
     
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
@@ -112,7 +124,7 @@ def decrypt_v2():
             if matrix_contains_empty_string(matrix):
                 decrypted_int_matrices.append(matrix)
             else:
-                decrypted_int_matrices.append(decrypt_16_bytes_v2(matrix, hex_key))
+                decrypted_int_matrices.append(decrypt_16_bytes_v2(matrix, keys))
     
         derypted_str_matrices = list(map(convert_int_matrix_to_binary_str_matrix,decrypted_int_matrices ))
         binary_int_arr = binary_string_matrices_to_binary_int_matrix(derypted_str_matrices)
@@ -124,9 +136,9 @@ def decrypt_v2():
         return jsonify({"error": "Unsupported file type"}), 415
 
 
-def encrypt_16_bytes_v2(curr_int_matrix, hex_key):
+def encrypt_16_bytes_v2(curr_int_matrix, keys):
 
-    hex_key_matrix = convert_hex_key_to_matrix(hex_key)
+    hex_key_matrix = keys[0]
     curr_int_matrix = xor_int_matrices(
         curr_int_matrix, hex_key_matrix)
 
@@ -135,26 +147,15 @@ def encrypt_16_bytes_v2(curr_int_matrix, hex_key):
         curr_int_matrix = forward_shift(curr_int_matrix)
         if i != 9:
             curr_int_matrix = forward_mix_v2(curr_int_matrix)
-        hex_key_matrix = handle_key_expansion_round_v2(hex_key_matrix, i)
-        key_hex_arr = convert_int_matrix_to_hex_matrix(hex_key_matrix)
+        hex_key_matrix = keys[i + 1]
         curr_int_matrix = xor_int_matrices(
             curr_int_matrix, hex_key_matrix)
     return curr_int_matrix
 
 
-def decrypt_16_bytes_v2(curr_int_matrix, hex_key):
+def decrypt_16_bytes_v2(curr_int_matrix, keys):
 
-    hex_key_matrix = convert_hex_key_to_matrix(hex_key)
-
-    round_keys = []
-
-    # round_keys.insert(0, key_binary_arr)
-
-    for i in range(10):
-        round_keys.insert(0, hex_key_matrix)
-        hex_key_matrix = handle_key_expansion_round_v2(hex_key_matrix, i)
-        # key_hex_arr = convert_binary_matrix_to_hex_matrix(round_key
-
+    hex_key_matrix = keys[0]
     curr_int_matrix = xor_int_matrices(
         curr_int_matrix, hex_key_matrix)
 
@@ -162,7 +163,7 @@ def decrypt_16_bytes_v2(curr_int_matrix, hex_key):
         curr_int_matrix = backward_shift(curr_int_matrix)
         curr_int_matrix = backwards_substitution_v2(curr_int_matrix)
         curr_int_matrix = xor_int_matrices(
-            curr_int_matrix, round_keys[i])
+            curr_int_matrix, keys[i + 1])
 
         if i != 9:
             curr_int_matrix = backward_mix_v2(curr_int_matrix)
