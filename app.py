@@ -99,8 +99,6 @@ def decrypt_v2():
     file = request.files['image']
 
     hex_key = request.form.get('key')
-
-    print("key", key)
     
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
@@ -120,7 +118,6 @@ def decrypt_v2():
         binary_int_arr = binary_string_matrices_to_binary_int_matrix(derypted_str_matrices)
         result = binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
        
-        print("result", result)
 
         return jsonify({"message": "File uploaded successfully", "url": result }), 200
     else:
