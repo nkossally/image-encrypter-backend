@@ -1,5 +1,3 @@
-from utilities import hex_to_four_bit_binary_string
-
 SIXTEEN = 16
 
 S_BOX = [

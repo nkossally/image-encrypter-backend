@@ -60,58 +60,6 @@ def xor(binary_str_1, binary_str_2):
     return sum
 
 
-def hex_to_eight_bit_binary_string( hex_string ):
-    int_value = int(hex_string, SIXTEEN)
-
-    binary_string = format((int_value), '08b')
-    
-    return binary_string
-
-def hex_to_four_bit_binary_string( hex_string ):
-    int_value = int(hex_string, SIXTEEN)
-
-    binary_string = format((int_value), '04b')
-    
-    return binary_string
-
-def convert_binary_arr_to_hex_arr(binary_arr):
-    transformed_arr= []
-
-    for binary_str in binary_arr:
-        half_byte_1 = binary_str[0: FOUR]
-        half_byte_2 = binary_str[FOUR :]
-        hex_str = binary_to_hex_string(half_byte_1) + binary_to_hex_string(half_byte_2)
-        if len(hex_str) == 4:
-            hex_str = hex_str[1] + hex_str[3]
-        transformed_arr.append(hex_str)
-
-    return transformed_arr
-
-def convert_binary_matrix_to_hex_matrix(matrix):
-    transformed_matrix = []
-
-    for i in range(len(matrix)):
-        new_row = []
-        for binary_string in matrix[i]:
-            byte_1 = binary_string[0: FOUR]
-            byte_2 = binary_string[FOUR :]
-            hex_str = binary_to_hex_string(byte_1) + binary_to_hex_string(byte_2)
-            if len(hex_str) == 4:
-                hex_str = hex_str[1] + hex_str[3]
-
-            new_row.append(hex_str)
-        transformed_matrix.append(new_row)
-
-    return transformed_matrix
-
-def binary_to_hex_string( binary_string ):
-    int_value = int(binary_string, 2)
-
-    hex_string = hex(int_value)[2:]
-    
-    return hex_string
-
-
 def convert_image_to_matrix(file):
     # Load the image
     image = Image.open(file)
@@ -181,19 +129,6 @@ def binary_string_matrices_to_binary_int_matrix(binary_str_matrices):
         arr = list(map(int, list(string)))
         result.append(arr)
     return result
-
-
-def image_to_byte_array(image_path):
-    img = Image.open(image_path)
-    img_array = np.array(img)
-    height, width, channels = img_array.shape
-    binary_strings = []
-    for row in img_array:
-        for pixel in row:
-            for channel_value in pixel:
-                binary_string = bin(channel_value)[2:].zfill(8)  # Ensure 8 bits
-                binary_strings.append(binary_string)
-    return binary_strings, (width, height)
 
 
 def convert_binary_str_matrix_to_str(binary_str_matrix):

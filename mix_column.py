@@ -43,21 +43,6 @@ def num_to_binary_string( num ):
 
     return binary_string
 
-def hex_to_binary_string_backwards( hex_string ):
-    int_value_1 = int(hex_string[0], SIXTEEN)
-    int_value_2 = int(hex_string[1], SIXTEEN)
-
-    binary_string = format((int_value_1), '04b') + format((int_value_2), '04b')
-    
-    return binary_string
-
-def hex_to_binary_string( hex_string ):
-    int_value = int(hex_string, SIXTEEN)
-
-    binary_string = format((int_value), '08b')
-    
-    return binary_string
-
 def add_8_bit_binary_arrays(arr_1, arr_2):
 
     sum = []
