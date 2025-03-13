@@ -72,7 +72,7 @@ def convert_image_to_matrix(file):
 
     # Apply a threshold to convert the grayscale image to binary
     # You can adjust the threshold value (here, it's 128) to get the desired result
-    threshold = 128
+    threshold = 192
     binary_matrix = (gray_array > threshold).astype(int)
 
     return binary_matrix
