@@ -3,7 +3,7 @@ import os
 
 from stable import forward_substitution_v2, backwards_substitution_v2
 from shift_rows import forward_shift, backward_shift
-from mix_column import  forward_mix_v2, backward_mix_v2
+from mix_column import  mix_columns, inverse_mix_columns
 from key_expansion import handle_key_expansion_round_v2
 from utilities import  xor_int_matrices, convert_image_to_matrix, binary_int_array_to_image, binary_int_matrix_to_binary_string_matrices, binary_string_matrices_to_binary_int_matrix, generate_key, convert_hex_key_to_matrix, convert_hex_matrix_to_int_matrix, convert_int_matrix_to_hex_matrix, convert_hex_key_to_matrix, convert_int_matrix_to_hex_matrix, convert_binary_str_matrix_to_int_matrix, convert_int_matrix_to_binary_str_matrix, matrix_contains_empty_string
 import cloudinary
@@ -57,6 +57,19 @@ matrix_4 = [
 ["76", "54", "32", "10"]
 ]
 
+matrix_5 = [
+["ab", "40", "f0", "c4"],
+["8b", "7f", "fc", "e4"],
+["89", "f1", "18", "4e"],
+["35", "05", "3f", "2f"]
+]
+
+matrix_6 = [
+["ab", "8b", "89", "35"],
+["40", "7f", "f1", "05"],
+["f0", "fc", "18", "3f"],
+["c4", "e4", "4e", "2f"]
+]
 
 @app.route('/encrypt', methods = ['POST'])
 @cross_origin()
@@ -146,7 +159,7 @@ def encrypt_16_bytes_v2(curr_int_matrix, keys):
         curr_int_matrix = forward_substitution_v2(curr_int_matrix)
         curr_int_matrix = forward_shift(curr_int_matrix)
         if i != 9:
-            curr_int_matrix = forward_mix_v2(curr_int_matrix)
+            curr_int_matrix = mix_columns(curr_int_matrix)
         hex_key_matrix = keys[i + 1]
         curr_int_matrix = xor_int_matrices(
             curr_int_matrix, hex_key_matrix)
@@ -166,7 +179,7 @@ def decrypt_16_bytes_v2(curr_int_matrix, keys):
             curr_int_matrix, keys[i + 1])
 
         if i != 9:
-            curr_int_matrix = backward_mix_v2(curr_int_matrix)
+            curr_int_matrix = inverse_mix_columns(curr_int_matrix)
 
     return curr_int_matrix
 
@@ -175,20 +188,26 @@ def decrypt_16_bytes_v2(curr_int_matrix, keys):
 @cross_origin()
 def test():
 
-    matrixie = convert_hex_matrix_to_int_matrix(matrix_4)
-    print(matrixie)
-    int_result = encrypt_16_bytes_v2(matrixie, hex_key)
-    result = convert_int_matrix_to_hex_matrix(int_result)
+    # matrixie = convert_hex_matrix_to_int_matrix(matrix_4)
+    # print(matrixie)
+    # int_result = encrypt_16_bytes_v2(matrixie, hex_key)
+    # result = convert_int_matrix_to_hex_matrix(int_result)
 
+    # print(result)
+    # int_result = decrypt_16_bytes_v2(int_result, hex_key)
+    # result = convert_int_matrix_to_hex_matrix(int_result)
+    # print(result)
+
+
+    matrix = convert_hex_matrix_to_int_matrix(matrix_5)
+    forwarded = mix_columns(matrix)
+    result = convert_int_matrix_to_hex_matrix(forwarded)
     print(result)
-    int_result = decrypt_16_bytes_v2(int_result, hex_key)
-    result = convert_int_matrix_to_hex_matrix(int_result)
+
+    inversed = inverse_mix_columns(forwarded)
+    result = convert_int_matrix_to_hex_matrix(inversed)
     print(result)
-    
     return {}
-
-
-# blarg("")
 
 
 

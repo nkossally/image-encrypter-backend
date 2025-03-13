@@ -1,5 +1,5 @@
 import numpy as np
-from utilities import convert_binary_string_matrix_to_int_matrix
+from utilities import convert_binary_string_matrix_to_int_matrix, xor_int_matrices
 
 FOUR = 4
 SIXTEEN = 16
@@ -27,139 +27,61 @@ POLYNOMIALS = [
     [1, 1, 0, 1, 1, 0, 0, 0],
 ]
 
-def string_to_int_array(s):
-  """Splits a string of digits into an array of integers.
+# Function for multiplying two numbers in GF(2^8)
+def gmul(a, b):
+    p = 0
+    for i in range(8):
+        if (b & 1):
+            p ^= a
+        high_bit = a & 0x80
+        a <<= 1
+        if high_bit:
+            a ^= 0x11B  # AES modulus
+        b >>= 1
+    return p
 
-  Args:
-    s: The string of digits.
+# The MixColumns constant matrix
+mix_matrix = [
+    [0x02, 0x03, 0x01, 0x01],
+    [0x01, 0x02, 0x03, 0x01],
+    [0x01, 0x01, 0x02, 0x03],
+    [0x03, 0x01, 0x01, 0x02]
+]
 
-  Returns:
-    A list of integers.
-  """
-  return [int(digit) for digit in s]
+# The Inverse MixColumns constant matrix
+inverse_mix_matrix = [
+    [0x0E, 0x0B, 0x0D, 0x09],
+    [0x09, 0x0E, 0x0B, 0x0D],
+    [0x0D, 0x09, 0x0E, 0x0B],
+    [0x0B, 0x0D, 0x09, 0x0E]
+]
 
-def num_to_binary_string( num ):
-    binary_string = format(num, '08b')
-
-    return binary_string
-
-def add_8_bit_binary_arrays(arr_1, arr_2):
-
-    sum = []
-
-    for i in range(EIGHT):
-        val_1 = arr_1[i] 
-        val_2 = arr_2[i] 
-        if (val_1 == 1 and val_2 == 0) or (val_1 == 0 and val_2 == 1):
-            sum.append(1)
-        else:
-            sum.append(0)
-
-    return sum
-
-def multiply_binary_strings(str_1, str_2):
-    num_arr_1 = list(map(int, str_1))
-    num_arr_2 = list(map(int, str_2))
-
-    product = multiply_polynomials(num_arr_1, num_arr_2)      
-
-    return product
-
-def multiply_polynomials(poly1, poly2):
-    """
-    Multiplies two polynomials represented as lists of coefficients.
-
-    Args:
-        poly1: List of coefficients for the first polynomial.
-        poly2: List of coefficients for the second polynomial.
-
-    Returns:
-        A list of coefficients representing the product polynomial.
-    """
-    result_degree = len(poly1) + len(poly2) - 2
-    result = [0] * (result_degree + 1)
-
-
-    for i, coeff1 in enumerate(poly1):
-        for j, coeff2 in enumerate(poly2):
-            result[i + j] += coeff1 * coeff2
-            result[i + j] =  result[i + j] % 2
-
-    for num in range(EIGHT + 1, EIGHT +  len(POLYNOMIALS) + 1):
-        if len(result) >= num:
-            idx = len(result) - num
-            POLYNOMIALS_idx = num - EIGHT - 1
-            if result[idx] == 1:
-
-                last_8_bits = result[len(result)  - EIGHT:]
-                last_8_bits = add_8_bit_binary_arrays(last_8_bits, POLYNOMIALS[POLYNOMIALS_idx])
-                result = result[0: len(result)  - EIGHT] + last_8_bits
-
-    # make it 8 bits
-    if len(result) > 8:
-        result = result[len(result) - EIGHT:]
-
-    return result
-
-
-def binary_str_to_hex_str(binary_string):
-    """Converts a binary string to a hexadecimal string.
-
-    Args:
-        binary_string: The binary string to convert.
-
-    Returns:
-        The hexadecimal string representation of the binary string, or None if the input is invalid.
-    """
-    # if not isinstance(binary_string, str) or not all(bit in '01' for bit in binary_string):
-    #     return None
-
-    decimal_value = int(binary_string, 2)
-
-    hex_string = hex(decimal_value)[2:]  # Remove the "0x" prefix
-
-    return hex_string.upper() #Return uppercase for standard hex notation
-
-def forward_mix_v2(matrix ):
-    transformed_matrix = [[] for _ in range(FOUR)]
+# MixColumns operation
+def mix_columns(state):
+    state = transpose_matrix(state)
+    mixed_state = [[0] * 4 for _ in range(4)]
     
-    for i in range(FOUR):
-        row = list(map(num_to_binary_string, FORWARD_MATRIX[i]))
-
-        for j in range(FOUR):
-            col = list(map(num_to_binary_string, matrix[j]))
-            sum =  [0] * (EIGHT)
-            for k in range(FOUR):
-
-                product = multiply_binary_strings(col[k], row[k])
-                sum = add_8_bit_binary_arrays(sum, product)
-
-            sum_str = list(map(str, sum))
-        
-            transformed_matrix[j].append("".join(sum_str))
+    for i in range(4):
+        for j in range(4):
+            mixed_state[j][i] = gmul(mix_matrix[j][0], state[0][i]) ^ gmul(mix_matrix[j][1], state[1][i]) ^ gmul(mix_matrix[j][2], state[2][i]) ^ gmul(mix_matrix[j][3], state[3][i])
     
-    transformed_matrix = convert_binary_string_matrix_to_int_matrix(transformed_matrix)
+    return transpose_matrix(mixed_state)
 
-    return transformed_matrix
-
-def backward_mix_v2(matrix):
-    transformed_matrix = [[] for _ in range(FOUR)]
+# Inverse MixColumns operation
+def inverse_mix_columns(state):
+    mixed_state = [[0] * 4 for _ in range(4)]
+    state = transpose_matrix(state)
     
-    for i in range(FOUR):
-        row = list(map(num_to_binary_string, BACKWARD_MATRIX[i]))
-
-        for j in range(FOUR):
-            col = list(map(num_to_binary_string, matrix[j]))
-            sum =  [0] * (EIGHT)
-            for k in range(FOUR):
-
-                product = multiply_binary_strings(col[k], row[k])
-                sum = add_8_bit_binary_arrays(sum, product)
-
-            sum_str = list(map(str, sum))
-        
-            transformed_matrix[j].append("".join(sum_str))
+    for i in range(4):
+        for j in range(4):
+            mixed_state[j][i] = gmul(inverse_mix_matrix[j][0], state[0][i]) ^ gmul(inverse_mix_matrix[j][1], state[1][i]) ^ gmul(inverse_mix_matrix[j][2], state[2][i]) ^ gmul(inverse_mix_matrix[j][3], state[3][i])
     
-    transformed_matrix = convert_binary_string_matrix_to_int_matrix(transformed_matrix)
+    return transpose_matrix(mixed_state)
 
-    return transformed_matrix
+
+def transpose_matrix(matrix):
+    new_matrix = [[] for _ in range(len(matrix))]
+    for i in range(len(matrix)):
+        for j in range(len(matrix[0])):
+            new_matrix[i].append(matrix[j][i])
+    return new_matrix

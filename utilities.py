@@ -20,20 +20,6 @@ SIXTEEN = 16
 FOUR = 4
 EIGHT = 8
 
-def xor_binary_arrays(arr_1, arr_2):
-    transformed_matrix = []
-    for i in range(len(arr_1)):
-        new_row = []
-        for j in range(len(arr_1[0])):
-            binary_str_1 = arr_1[i][j]
-            binary_str_2 = arr_2[i][j]
-            sum = xor(binary_str_1, binary_str_2)
-            new_row.append(sum)
-        
-        transformed_matrix.append(new_row)
-    
-    return transformed_matrix
-
 def xor_int_matrices(arr_1, arr_2):
     transformed_matrix = []
     for i in range(len(arr_1)):
@@ -49,15 +35,6 @@ def xor_int_matrices(arr_1, arr_2):
         transformed_matrix.append(new_row)
     
     return transformed_matrix
-
-def xor(binary_str_1, binary_str_2):
-    sum = ""
-    for i in range(len(binary_str_1)):
-        if binary_str_1[i] != binary_str_2[i]:
-            sum += "1"
-        else:
-            sum += "0"
-    return sum
 
 
 def convert_image_to_matrix(file):
