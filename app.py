@@ -1,3 +1,8 @@
+from flask_socketio import SocketIO, emit
+import time
+import threading
+
+
 from flask import Flask, request, jsonify
 import os
 
@@ -11,10 +16,11 @@ import cloudinary.uploader
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
-cors = CORS(app) # allow CORS for all domains on all routes.
+cors = CORS(app, supports_credentials=True) # allow CORS for all domains on all routes.
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000")
 
 # Function to check allowed file extensions
 def allowed_file(filename):
@@ -208,6 +214,31 @@ def test():
     result = convert_int_matrix_to_hex_matrix(inversed)
     print(result)
     return {}
+
+# This function simulates a long-running process
+def long_running_task():
+    for i in range(1, 101):  # Assume this is a task that takes a long time
+        time.sleep(0.1)  # Simulating some work being done
+        # Emit the progress to the client via WebSocket
+        socketio.emit('progress_update', {'progress': i})
+    socketio.emit('progress_update', {'progress': 100})  # Task complete
+
+# A route to start the long-running task
+@app.route('/start-task', methods=['GET'])
+@cross_origin()
+def start_task():
+    # Start the long-running task in a separate thread
+    threading.Thread(target=long_running_task).start()
+    return jsonify({'message': 'Task started'}), 200
+
+# WebSocket event to handle connection
+@socketio.on('connect')
+def handle_connect():
+    print("Client connected!")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print("Client disconnected!")
 
 
 
