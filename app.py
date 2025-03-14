@@ -101,15 +101,17 @@ def encrypt_v2():
             keys.append(hex_key_matrix)
 
         encrypted_int_matrices = []
-        for matrix in int_matrices:
+        for idx, matrix in enumerate(int_matrices):
             if matrix_contains_empty_string(matrix):
                 encrypted_int_matrices.append(matrix)
             else:
                 encrypted_int_matrices.append(encrypt_16_bytes_v2(matrix, keys))
+            socketio.emit('progress_update', {'progress': 100 * idx / len(int_matrices) })
         
         encrypted_str_matrices = list(map(convert_int_matrix_to_binary_str_matrix,encrypted_int_matrices ))
         binary_int_arr = binary_string_matrices_to_binary_int_matrix(encrypted_str_matrices)
         result = binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
+        socketio.emit('progress_update', {'progress': 100})
 
         return jsonify({"message": "File encrypted successfully", "url": result["url"], "key": hex_key }), 200
     else:
@@ -139,17 +141,18 @@ def decrypt_v2():
         str_matrices = binary_int_matrix_to_binary_string_matrices(binary_matrices)
         int_matrices = list(map(convert_binary_str_matrix_to_int_matrix, str_matrices))
         decrypted_int_matrices = []
-        for matrix in int_matrices:
+        for idx, matrix in enumerate(int_matrices):
             if matrix_contains_empty_string(matrix):
                 decrypted_int_matrices.append(matrix)
             else:
                 decrypted_int_matrices.append(decrypt_16_bytes_v2(matrix, keys))
-    
+            socketio.emit('progress_update', {'progress': 100 * idx / len(int_matrices) })
+
         derypted_str_matrices = list(map(convert_int_matrix_to_binary_str_matrix,decrypted_int_matrices ))
         binary_int_arr = binary_string_matrices_to_binary_int_matrix(derypted_str_matrices)
         result = binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
        
-
+        socketio.emit('progress_update', {'progress': 100})
         return jsonify({"message": "File decrypted successfully", "url": result["url"] }), 200
     else:
         return jsonify({"error": "Unsupported file type"}), 415
@@ -214,33 +217,3 @@ def test():
     result = convert_int_matrix_to_hex_matrix(inversed)
     print(result)
     return {}
-
-# This function simulates a long-running process
-def long_running_task():
-    for i in range(1, 101):  # Assume this is a task that takes a long time
-        time.sleep(0.1)  # Simulating some work being done
-        # Emit the progress to the client via WebSocket
-        socketio.emit('progress_update', {'progress': i})
-    socketio.emit('progress_update', {'progress': 100})  # Task complete
-
-# A route to start the long-running task
-@app.route('/start-task', methods=['GET'])
-@cross_origin()
-def start_task():
-    # Start the long-running task in a separate thread
-    threading.Thread(target=long_running_task).start()
-    return jsonify({'message': 'Task started'}), 200
-
-# WebSocket event to handle connection
-@socketio.on('connect')
-def handle_connect():
-    print("Client connected!")
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    print("Client disconnected!")
-
-
-
-if __name__ == "__main__":
-    app.run(port=8000, debug=True)
