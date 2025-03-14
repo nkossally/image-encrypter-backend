@@ -1,19 +1,15 @@
 from flask_socketio import SocketIO, emit
-import time
-import threading
-
-
 from flask import Flask, request, jsonify
-import os
+from flask_cors import CORS, cross_origin
+import cloudinary
+import cloudinary.uploader
 
 from stable import forward_substitution_v2, backwards_substitution_v2
 from shift_rows import forward_shift, backward_shift
 from mix_column import  mix_columns, inverse_mix_columns
 from key_expansion import handle_key_expansion_round_v2
 from utilities import  xor_int_matrices, convert_image_to_matrix, binary_int_array_to_image, binary_int_matrix_to_binary_string_matrices, binary_string_matrices_to_binary_int_matrix, generate_key, convert_hex_key_to_matrix, convert_hex_matrix_to_int_matrix, convert_int_matrix_to_hex_matrix, convert_hex_key_to_matrix, convert_int_matrix_to_hex_matrix, convert_binary_str_matrix_to_int_matrix, convert_int_matrix_to_binary_str_matrix, matrix_contains_empty_string
-import cloudinary
-import cloudinary.uploader
-from flask_cors import CORS, cross_origin
+from consts import matrix_5
 
 app = Flask(__name__)
 cors = CORS(app, supports_credentials=True) # allow CORS for all domains on all routes.
@@ -33,49 +29,6 @@ cloudinary.config(
     api_secret = "kzphOSXDte8CvQLQ5m6-YFyhQvo", # Click 'View API Keys' above to copy your API secret
     secure=True
 )
-
-
-key = "00001010101000011000101100000011001111000000111110110011001011011111101110011111100010110101010100110001100011011010100101110100"
-hex_key = "0f1571c947d9e8590cb7add6af7f6798"
-text = "0123456789abcdeffedcba9876543210"
-
-decryption_key = [['b4', '8e', 'f3', '52'], ['ba', '98', '13', '4e'], [
-    '7f', '4d', '59', '20'], ['86', '26', '18', '76']]
-
-matrix = [
-    ["EA", "04", "65", "85"],
-    ["83", "45", "5D", "96"],
-    ["5C", "33", "98", "B0"],
-    ["F0", "2D", "AD", "C5"]
-]
-
-matrix_2 = [
-    ["87", "6E", "46", "A6"],
-    ["F2", "4C", "E7", "8C"],
-    ["4D", "90", "4A", "D8"],
-    ["97", "EC", "C3", "95"]
-]
-
-matrix_4 = [
-["01", "23", "45", "67"],
-["89", "ab", "cd", "ef"],
-["fe", "dc", "ba", "98"],
-["76", "54", "32", "10"]
-]
-
-matrix_5 = [
-["ab", "40", "f0", "c4"],
-["8b", "7f", "fc", "e4"],
-["89", "f1", "18", "4e"],
-["35", "05", "3f", "2f"]
-]
-
-matrix_6 = [
-["ab", "8b", "89", "35"],
-["40", "7f", "f1", "05"],
-["f0", "fc", "18", "3f"],
-["c4", "e4", "4e", "2f"]
-]
 
 @app.route('/encrypt', methods = ['POST'])
 @cross_origin()
