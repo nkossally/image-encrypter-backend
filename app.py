@@ -16,7 +16,7 @@ cors = CORS(app, supports_credentials=True) # allow CORS for all domains on all 
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
-socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000")
+# socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000")
 
 # Function to check allowed file extensions
 def allowed_file(filename):
@@ -59,12 +59,12 @@ def encrypt_v2():
                 encrypted_int_matrices.append(matrix)
             else:
                 encrypted_int_matrices.append(encrypt_16_bytes_v2(matrix, keys))
-            socketio.emit('progress_update', {'progress': 100 * idx / len(int_matrices) })
+            # socketio.emit('progress_update', {'progress': 100 * idx / len(int_matrices) })
         
         encrypted_str_matrices = list(map(convert_int_matrix_to_binary_str_matrix,encrypted_int_matrices ))
         binary_int_arr = binary_string_matrices_to_binary_int_matrix(encrypted_str_matrices)
         result = binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
-        socketio.emit('progress_update', {'progress': 100})
+        # socketio.emit('progress_update', {'progress': 100})
 
         return jsonify({"message": "File encrypted successfully", "url": result["url"], "key": hex_key }), 200
     else:
@@ -99,13 +99,13 @@ def decrypt_v2():
                 decrypted_int_matrices.append(matrix)
             else:
                 decrypted_int_matrices.append(decrypt_16_bytes_v2(matrix, keys))
-            socketio.emit('progress_update', {'progress': 100 * idx / len(int_matrices) })
+            # socketio.emit('progress_update', {'progress': 100 * idx / len(int_matrices) })
 
         derypted_str_matrices = list(map(convert_int_matrix_to_binary_str_matrix,decrypted_int_matrices ))
         binary_int_arr = binary_string_matrices_to_binary_int_matrix(derypted_str_matrices)
         result = binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
        
-        socketio.emit('progress_update', {'progress': 100})
+        # socketio.emit('progress_update', {'progress': 100})
         return jsonify({"message": "File decrypted successfully", "url": result["url"] }), 200
     else:
         return jsonify({"error": "Unsupported file type"}), 415
