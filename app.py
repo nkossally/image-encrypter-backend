@@ -66,9 +66,12 @@ def encrypt_v2():
         result = binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
         socketio.emit('progress_update', {'progress': 100})
 
-        return jsonify({"message": "File encrypted successfully", "url": result["url"], "key": hex_key }), 200
+        return jsonify({"message": "File encrypted successfully.", "url": result["url"], "key": hex_key }), 200
     else:
-        return jsonify({"error": "Unsupported file type"}), 415
+        return jsonify({"error": "Unsupported file type."}), 415
+    
+    return jsonify({"error": "Failed to upload and encrypt image. Try encrypting a smaller image."}), 500
+
 
 
 @app.route('/decrypt', methods = ['POST'])
@@ -108,8 +111,9 @@ def decrypt_v2():
         socketio.emit('progress_update', {'progress': 100})
         return jsonify({"message": "File decrypted successfully", "url": result["url"] }), 200
     else:
-        return jsonify({"error": "Unsupported file type"}), 415
+        return jsonify({"error": "Unsupported file type."}), 415
 
+    return jsonify({"error": "Failed to upload and decrypt image. Try encrypting a smaller image."}), 500
 
 def encrypt_16_bytes_v2(curr_int_matrix, keys):
 
