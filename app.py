@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 import cloudinary
 import cloudinary.uploader
+import pusher
 
 from stable import forward_substitution_v2, backwards_substitution_v2
 from shift_rows import forward_shift, backward_shift
@@ -17,6 +18,14 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 socketio = SocketIO(app, cors_allowed_origins="*")
+
+pusher_client = pusher.Pusher(
+  app_id='1958858',
+  key='0f67a7553357ff1f8491',
+  secret='4d0ca2e86603ed533808',
+  cluster='us3',
+  ssl=True
+)
 
 # Function to check allowed file extensions
 def allowed_file(filename):
@@ -54,18 +63,24 @@ def encrypt_v2():
             keys.append(hex_key_matrix)
 
         encrypted_int_matrices = []
+        progress_benchmarks = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90]
         for idx, matrix in enumerate(int_matrices):
             if matrix_contains_empty_string(matrix):
                 encrypted_int_matrices.append(matrix)
             else:
                 encrypted_int_matrices.append(encrypt_16_bytes_v2(matrix, keys))
-            socketio.emit('progress_update', {'progress': 100 * idx / len(int_matrices) })
-        
+            progress = 100 * idx / len(int_matrices)
+            socketio.emit('progress_update', {'progress': progress })
+            if len(progress_benchmarks) > 0 and progress >= progress_benchmarks[0]:
+                val = progress_benchmarks.pop(0)
+                pusher_client.trigger('progress_update', 'progress_update', {'progress': val })
+            # pusher_client.trigger('progress_update', 'progress_update', {'progress': 100 * idx / len(int_matrices) })
+
         encrypted_str_matrices = list(map(convert_int_matrix_to_binary_str_matrix,encrypted_int_matrices ))
         binary_int_arr = binary_string_matrices_to_binary_int_matrix(encrypted_str_matrices)
         result = binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
         socketio.emit('progress_update', {'progress': 100})
-
+        # pusher_client.trigger('progress_update','progress_update', 'progress_update', {'progress': 100})
         return jsonify({"message": "File encrypted successfully.", "url": result["url"], "key": hex_key }), 200
     else:
         return jsonify({"error": "Unsupported file type."}), 415
@@ -97,18 +112,24 @@ def decrypt_v2():
         str_matrices = binary_int_matrix_to_binary_string_matrices(binary_matrices)
         int_matrices = list(map(convert_binary_str_matrix_to_int_matrix, str_matrices))
         decrypted_int_matrices = []
+        progress_benchmarks = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90]
         for idx, matrix in enumerate(int_matrices):
             if matrix_contains_empty_string(matrix):
                 decrypted_int_matrices.append(matrix)
             else:
                 decrypted_int_matrices.append(decrypt_16_bytes_v2(matrix, keys))
-            socketio.emit('progress_update', {'progress': 100 * idx / len(int_matrices) })
-
+            progress = 100 * idx / len(int_matrices)
+            socketio.emit('progress_update', {'progress': progress })
+            if len(progress_benchmarks) > 0 and progress >= progress_benchmarks[0]:
+                val = progress_benchmarks.pop(0)
+                pusher_client.trigger('progress_update', 'progress_update', {'progress': val })
         derypted_str_matrices = list(map(convert_int_matrix_to_binary_str_matrix,decrypted_int_matrices ))
         binary_int_arr = binary_string_matrices_to_binary_int_matrix(derypted_str_matrices)
         result = binary_int_array_to_image(binary_int_arr, "encrypted_image.png")
        
         socketio.emit('progress_update', {'progress': 100})
+        pusher_client.trigger('progress_update', 'progress_update', {'progress': 100})
+
         return jsonify({"message": "File decrypted successfully", "url": result["url"] }), 200
     else:
         return jsonify({"error": "Unsupported file type."}), 415
@@ -174,3 +195,13 @@ def test():
     result = convert_int_matrix_to_hex_matrix(inversed)
     print(result)
     return {}
+
+
+# @socketio.on('connect')
+# def handle_connect():
+#     emit('message', {'data': 'Connected to server!'})
+
+# @app.route('/push_event')
+# def push_event():
+#     pusher_client.trigger('my-channel', 'my-event', {'message': 'Hello from Flask!'})
+#     return 'Event Pushed'

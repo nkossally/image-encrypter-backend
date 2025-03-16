@@ -5,5 +5,11 @@
     ],
     "routes": [
       { "src": "/(.*)", "dest": "/app.py" }
-    ]
+    ],
+    "env": {
+      "APP_ID": "@app-id",
+      "KEY": "0f67a7553357ff1f8491",
+      "SECRET": "@app-secret",
+      "CLUSTER": "us3"
+    }
   }
