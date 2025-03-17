@@ -37,7 +37,7 @@ def xor_int_matrices(arr_1, arr_2):
     return transformed_matrix
 
 
-def convert_image_to_matrix(file):
+def convert_image_to_matrix(file, is_black_and_white):
     # Load the image
     image = Image.open(file)
 
@@ -49,7 +49,7 @@ def convert_image_to_matrix(file):
 
     # Apply a threshold to convert the grayscale image to binary
     # You can adjust the threshold value (here, it's 128) to get the desired result
-    threshold = 192
+    threshold = 32 if is_black_and_white else 192
     binary_matrix = (gray_array > threshold).astype(int)
 
     return binary_matrix

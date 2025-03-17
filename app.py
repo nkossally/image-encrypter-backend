@@ -46,12 +46,14 @@ def encrypt_v2():
         return jsonify({"error": "No file part"}), 400
 
     file = request.files['image']
+    is_black_and_white = request.form.get('isBlackAndWhite')
 
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
     
     if file and allowed_file(file.filename):
-        binary_matrices = convert_image_to_matrix(file)
+        pusher_client.trigger('progress_update', 'progress_update', {'progress': 0 })
+        binary_matrices = convert_image_to_matrix(file, is_black_and_white)
         str_matrices = binary_int_matrix_to_binary_string_matrices(binary_matrices)
         int_matrices = list(map(convert_binary_str_matrix_to_int_matrix, str_matrices))
         
@@ -63,7 +65,7 @@ def encrypt_v2():
             keys.append(hex_key_matrix)
 
         encrypted_int_matrices = []
-        progress_benchmarks = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90]
+        progress_benchmarks = [ 10, 20, 30, 40, 50, 60, 70, 80, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99 ]
         for idx, matrix in enumerate(int_matrices):
             if matrix_contains_empty_string(matrix):
                 encrypted_int_matrices.append(matrix)
@@ -98,6 +100,7 @@ def decrypt_v2():
     file = request.files['image']
 
     hex_key = request.form.get('key')
+    is_black_and_white = request.form.get('isBlackAndWhite')
     hex_key_matrix = convert_hex_key_to_matrix(hex_key)
     keys = [hex_key_matrix]
     for i in range(10):
@@ -108,11 +111,11 @@ def decrypt_v2():
         return jsonify({"error": "No selected file"}), 400
     
     if file and allowed_file(file.filename):
-        binary_matrices = convert_image_to_matrix(file)
+        binary_matrices = convert_image_to_matrix(file, is_black_and_white)
         str_matrices = binary_int_matrix_to_binary_string_matrices(binary_matrices)
         int_matrices = list(map(convert_binary_str_matrix_to_int_matrix, str_matrices))
         decrypted_int_matrices = []
-        progress_benchmarks = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90]
+        progress_benchmarks = [ 10, 20, 30, 40, 50, 60, 70, 80, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99 ]
         for idx, matrix in enumerate(int_matrices):
             if matrix_contains_empty_string(matrix):
                 decrypted_int_matrices.append(matrix)
@@ -196,12 +199,3 @@ def test():
     print(result)
     return {}
 
-
-# @socketio.on('connect')
-# def handle_connect():
-#     emit('message', {'data': 'Connected to server!'})
-
-# @app.route('/push_event')
-# def push_event():
-#     pusher_client.trigger('my-channel', 'my-event', {'message': 'Hello from Flask!'})
-#     return 'Event Pushed'
