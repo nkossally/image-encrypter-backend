@@ -46,8 +46,9 @@ def encrypt_v2():
         return jsonify({"error": "No file part"}), 400
 
     file = request.files['image']
-    is_black_and_white = request.form.get('isBlackAndWhite')
-
+    is_black_and_white = request.form.get('isBlackAndWhite').lower()
+    is_black_and_white = True if is_black_and_white == "true" else False  # Convert to boolean
+    
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
     
@@ -100,7 +101,9 @@ def decrypt_v2():
     file = request.files['image']
 
     hex_key = request.form.get('key')
-    is_black_and_white = request.form.get('isBlackAndWhite')
+    is_black_and_white = request.form.get('isBlackAndWhite').lower()
+    is_black_and_white = True if is_black_and_white == "true" else False  # Convert to boolean
+
     hex_key_matrix = convert_hex_key_to_matrix(hex_key)
     keys = [hex_key_matrix]
     for i in range(10):
